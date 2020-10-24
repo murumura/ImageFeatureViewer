@@ -1,8 +1,8 @@
 #include "view.h"
 
+#include <QDebug>
 #include <QtMath>
 #include <QtWidgets>
-
 void GraphicsView::wheelEvent(QWheelEvent *e)
 {
 	if (e->modifiers() & Qt::ControlModifier) {
@@ -36,12 +36,14 @@ View::View(const QString &name, QWidget *parent)
 	zoomInIcon->setAutoRepeatDelay(0);
 	zoomInIcon->setIcon(QPixmap("../picture/zoomin.png"));
 	zoomInIcon->setIconSize(iconSize);
+
 	QToolButton *zoomOutIcon = new QToolButton();
 	zoomOutIcon->setAutoRepeat(true);
 	zoomOutIcon->setAutoRepeatInterval(33);
 	zoomOutIcon->setAutoRepeatDelay(0);
 	zoomOutIcon->setIcon(QPixmap("../picture/zoomout.png"));
 	zoomOutIcon->setIconSize(iconSize);
+
 	zoomSlider = new QSlider();
 	zoomSlider->setMinimum(0);
 	zoomSlider->setMaximum(500);
@@ -49,7 +51,7 @@ View::View(const QString &name, QWidget *parent)
 	zoomSlider->setTickPosition(QSlider::TicksRight);
 
 	// Zoom slider layout
-	QVBoxLayout *zoomSliderLayout = new QVBoxLayout;
+	QVBoxLayout *zoomSliderLayout = new QVBoxLayout();
 	zoomSliderLayout->addWidget(zoomInIcon);
 	zoomSliderLayout->addWidget(zoomSlider);
 	zoomSliderLayout->addWidget(zoomOutIcon);
@@ -57,9 +59,11 @@ View::View(const QString &name, QWidget *parent)
 	QToolButton *rotateLeftIcon = new QToolButton();
 	rotateLeftIcon->setIcon(QPixmap("../picture/rotateleft.png"));
 	rotateLeftIcon->setIconSize(iconSize);
+
 	QToolButton *rotateRightIcon = new QToolButton();
 	rotateRightIcon->setIcon(QPixmap("../picture/rotateright.png"));
 	rotateRightIcon->setIconSize(iconSize);
+
 	rotateSlider = new QSlider();
 	rotateSlider->setOrientation(Qt::Horizontal);
 	rotateSlider->setMinimum(-360);
@@ -86,7 +90,7 @@ View::View(const QString &name, QWidget *parent)
 	selectModeButton->setCheckable(true);
 	selectModeButton->setChecked(true);
 
-	dragModeButton = new QToolButton;
+	dragModeButton = new QToolButton();
 	dragModeButton->setText(tr("Drag"));
 	dragModeButton->setCheckable(true);
 	dragModeButton->setChecked(false);
@@ -95,6 +99,11 @@ View::View(const QString &name, QWidget *parent)
 	antialiasButton->setText(tr("Antialiasing"));
 	antialiasButton->setCheckable(true);
 	antialiasButton->setChecked(false);
+
+	QButtonGroup *pointerModeGroup = new QButtonGroup(this);
+	pointerModeGroup->setExclusive(true);
+	pointerModeGroup->addButton(selectModeButton);
+	pointerModeGroup->addButton(dragModeButton);
 
 	labelLayout->addWidget(label);
 	labelLayout->addStretch();
@@ -119,6 +128,10 @@ View::View(const QString &name, QWidget *parent)
 	connect(graphicsView->horizontalScrollBar(), &QAbstractSlider::valueChanged,
 	        this, &View::setResetButtonEnabled);
 
+	connect(selectModeButton, &QAbstractButton::toggled, this, &View::togglePointerMode);
+	connect(dragModeButton, &QAbstractButton::toggled, this, &View::togglePointerMode);
+	connect(antialiasButton, &QAbstractButton::toggled, this, &View::toggleAntialiasing);
+
 	connect(rotateLeftIcon, &QAbstractButton::clicked, this, &View::rotateLeft);
 	connect(rotateRightIcon, &QAbstractButton::clicked, this, &View::rotateRight);
 	connect(zoomInIcon, &QAbstractButton::clicked, this, &View::zoomIn);
@@ -141,7 +154,13 @@ void View::resetView()
 
 	resetButton->setEnabled(false);
 }
-
+void View::togglePointerMode()
+{
+	graphicsView->setDragMode(selectModeButton->isChecked()
+	                              ? QGraphicsView::RubberBandDrag
+	                              : QGraphicsView::ScrollHandDrag);
+	graphicsView->setInteractive(selectModeButton->isChecked());
+}
 void View::setResetButtonEnabled()
 {
 	resetButton->setEnabled(true);
@@ -158,14 +177,20 @@ void View::setupMatrix()
 	graphicsView->setTransform(matrix);
 	setResetButtonEnabled();
 }
-void View::zoomIn(int level)
+void View::toggleAntialiasing()
 {
-	zoomSlider->setValue(zoomSlider->value() + level);
+	graphicsView->setRenderHint(QPainter::Antialiasing, antialiasButton->isChecked());
+}
+void View::zoomIn(int level = 1)
+{
+	level = 1;
+	zoomSlider->setValue(zoomSlider->value() + 1);
 }
 
-void View::zoomOut(int level)
+void View::zoomOut(int level = 1)
 {
-	zoomSlider->setValue(zoomSlider->value() - level);
+	level = 1;
+	zoomSlider->setValue(zoomSlider->value() - 1);
 }
 
 void View::rotateLeft()

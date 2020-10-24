@@ -29,13 +29,15 @@ class View : public QFrame {
 	QGraphicsView *view() const;
 
    public slots:
-	void zoomIn(int level = 1);
-	void zoomOut(int level = 1);
+	void zoomIn(int level);
+	void zoomOut(int level);
 
    private slots:
 	void resetView();
 	void setResetButtonEnabled();
 	void setupMatrix();
+	void togglePointerMode();
+	void toggleAntialiasing();
 	void rotateLeft();
 	void rotateRight();
 
@@ -44,9 +46,7 @@ class View : public QFrame {
 	QLabel *label;
 	QToolButton *selectModeButton;
 	QToolButton *dragModeButton;
-	QToolButton *openGlButton;
 	QToolButton *antialiasButton;
-	QToolButton *printButton;
 	QToolButton *resetButton;
 	QSlider *zoomSlider;
 	QSlider *rotateSlider;
