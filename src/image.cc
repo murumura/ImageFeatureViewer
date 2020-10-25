@@ -9,17 +9,39 @@
 
 CVImage::CVImage(const QString &img_path)
 {
-	image = new QImage(img_path);
+	qimage = QImage(img_path);
 	m_pixmap = QPixmap(img_path);
-	this->width = image->width();
-	this->height = image->height();
-	setZValue((width + height) % 2);
+	this->m_width = qimage.width();
+	this->m_height = qimage.height();
+	setZValue((m_width + m_height) % 2);
 	setFlags(ItemIsSelectable | ItemIsMovable);
 	setAcceptHoverEvents(true);
 }
+CVImage::CVImage(const CVImage &src_img)
+{
+	qimage = src_img.get_qimage();
+	m_pixmap = src_img.get_pixmap();
+	m_height = src_img.height();
+	m_width = src_img.width();
+}
+CVImage::~CVImage()
+{
+	qDebug() << "CVImage::~CVImage()";
+}
+CVImage &CVImage::operator=(const CVImage &other)
+{
+	// check for self-assignment
+	if (this == &other)
+		return *this;
+	qimage = other.get_qimage();
+	m_pixmap = other.get_pixmap();
+	m_height = other.height();
+	m_width = other.width();
+	return *this;
+}
 QRectF CVImage::boundingRect() const
 {
-	return QRectF(0, 0, 110, 70);
+	return QRectF(m_pixmap.rect());
 }
 void CVImage::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -36,10 +58,8 @@ void CVImage::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	QGraphicsItem::mouseMoveEvent(event);
 }
 void CVImage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-
 {
 	Q_UNUSED(widget);
-
 	QPointF center(m_pixmap.width() / qreal(2), m_pixmap.height() / qreal(2));
 	painter->translate(QPolygonF().at(0) - center);
 	painter->translate(center);

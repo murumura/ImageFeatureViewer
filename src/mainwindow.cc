@@ -5,39 +5,54 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QKeyEvent>
+#include <QList>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QPluginLoader>
 #include <QSplitter>
-#include <QList>
 
 #include "chip.h"
 #include "view.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent),
-      top_scene(new QGraphicsScene(0,0,1700,1000,this)),
-	  bottom_scene(new QGraphicsScene(0,0,1700,1000,this)),
+      top_scene(new QGraphicsScene(0, 0, 1920, 1080, this)),
+      top_histogram_scene(new QGraphicsScene(0, 0, 1920, 1080, this)),
+      bottom_scene(new QGraphicsScene(0, 0, 1920, 1080, this)),
+      bottom_histogram_scene(new QGraphicsScene(0, 0, 1920, 1080, this)),
       h1Splitter(new QSplitter(this)),
       h2Splitter(new QSplitter(this)),
       fileMenu(nullptr),
-      exitMenu(nullptr)
+      exitMenu(nullptr),
+      editMenu(nullptr),
+      CurImage(nullptr)
 {
 	QSplitter *vSplitter = new QSplitter();
 	vSplitter->setOrientation(Qt::Vertical);
-	
+
 	vSplitter->addWidget(h1Splitter);
 	vSplitter->addWidget(h2Splitter);
 
-
-	View *view = new View("Top view");
+	View *view = new View("Original");
 	view->view()->setScene(top_scene);
 	h1Splitter->addWidget(view);
-	
-	view = new View("Bottom view");
+	activeSceneList.push_back(top_scene);
+
+	view = new View("Histogram view");
+	view->view()->setScene(top_histogram_scene);
+	h1Splitter->addWidget(view);
+	activeSceneList.push_back(top_histogram_scene);
+
+	view = new View("After processing");
 	view->view()->setScene(bottom_scene);
 	h2Splitter->addWidget(view);
-	
+	activeSceneList.push_back(bottom_scene);
+
+	view = new View("Histogram view");
+	view->view()->setScene(bottom_histogram_scene);
+	h2Splitter->addWidget(view);
+	activeSceneList.push_back(bottom_histogram_scene);
+
 	QHBoxLayout *layout = new QHBoxLayout();
 	layout->addWidget(vSplitter);
 	initUI();
@@ -49,6 +64,7 @@ void MainWindow::initUI()
 {
 	menuBar = new QMenuBar();
 	fileMenu = menuBar->addMenu("&File");
+	editMenu = menuBar->addMenu("&Edit");
 	exitMenu = menuBar->addMenu("&Exit");
 	createActions();
 }
@@ -59,9 +75,22 @@ void MainWindow::createActions()
 	fileMenu->addAction(openAction);
 	exitAction = new QAction("&Exit", this);
 	exitMenu->addAction(exitAction);
+	edit_Histogram_Action = new QAction("&Histogram", this);
+	editMenu->addAction(edit_Histogram_Action);
 	// connect the signals and slots
 	connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
 	connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
+	connect(edit_Histogram_Action, SIGNAL(triggered(bool)), this, SLOT(histogram_equalization()));
+}
+void MainWindow::histogram_equalization()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+	CVImage *histogramImage = new CVImage(*CurImage);
+	histogramImage->setPos(QPointF(0, 0));
+	top_histogram_scene->addItem(histogramImage);
 }
 void MainWindow::openImage()
 {
@@ -81,35 +110,25 @@ void MainWindow::showImage(QString path)
 	currentImagePath = path;
 	populateScene();
 }
+void MainWindow::clearScene()
+{
+	if (CurImage != nullptr) {
+		delete CurImage;
+		CurImage = nullptr;
+	}
+	for (auto &scene : activeSceneList) {
+		scene->clear();
+	}
+}
+void MainWindow::updateScene()
+{
+}
 void MainWindow::populateScene()
 {
 	/** In the QSplitter, add a custom QWidget which uses a QImage to draw in it's repaint methods. */
-	
-	CVImage *item = new CVImage(currentImagePath);
-	item->setPos(QPointF(0, 0));
-	top_scene->addItem(item);
-	
-	QImage image("../picture/colorful.jpg");
-
-	/*
-	int xx = 0;
-	int nitems = 0;
-
-	for (int i = -11000; i < 11000; i += 110) {
-		++xx;
-		int yy = 0;
-		for (int j = -7000; j < 7000; j += 70) {
-			++yy;
-			qreal x = (i + 11000) / 22000.0;
-			qreal y = (j + 7000) / 14000.0;
-
-			QColor color(image.pixel(int(image.width() * x), int(image.height() * y)));
-			QGraphicsItem *item = new Chip(color, xx, yy);
-			item->setPos(QPointF(i, j));
-			scene->addItem(item);
-
-			++nitems;
-		}
-	}
-	*/
+	clearScene();
+	CurImage = new CVImage(currentImagePath);
+	CurImage->setPos(QPointF(0, 0));
+	top_scene->addItem(CurImage);
+	updateScene();
 }

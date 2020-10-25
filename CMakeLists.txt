@@ -32,18 +32,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(project_sources
 src/main.cc
 src/mainwindow.cc
-src/rgb_extraction_plugin.cc
 src/view.cc
 src/image.cc
 src/chip.cc
 )
 set(project_headers
 include/mainwindow.h
-include/editor_plugin_interface.h
-include/rgb_extraction_plugin.h
 include/view.h
 include/image.h
 include/chip.h
+include/image_op.h
 )
 
 
