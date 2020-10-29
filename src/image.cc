@@ -24,6 +24,13 @@ CVImage::CVImage(const CVImage &src_img)
 	m_height = src_img.height();
 	m_width = src_img.width();
 }
+CVImage::CVImage(const CVImage src_img, img_op op)
+{
+	qimage = op(src_img.get_qimage());
+	m_pixmap = QPixmap::fromImage(qimage);
+	m_height = src_img.height();
+	m_width = src_img.width();
+}
 CVImage::~CVImage()
 {
 	qDebug() << "CVImage::~CVImage()";

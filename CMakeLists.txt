@@ -34,7 +34,9 @@ src/main.cc
 src/mainwindow.cc
 src/view.cc
 src/image.cc
+src/image_op.cc
 src/chip.cc
+src/util.cc
 )
 set(project_headers
 include/mainwindow.h
@@ -42,6 +44,7 @@ include/view.h
 include/image.h
 include/chip.h
 include/image_op.h
+include/util.h
 )
 
 

@@ -5,12 +5,16 @@
 #include <QGraphicsItem>
 #include <QGraphicsPixmapItem>
 #include <QImage>
+#include <functional>
+#include <iostream>
+
 #include "image_op.h"
 class mainwindow;
 class CVImage : public QGraphicsItem {
    public:
 	CVImage(const QString &img_path);
 	CVImage(const CVImage &src_img);
+	CVImage(const CVImage src_img, img_op op);
 	CVImage &operator=(const CVImage &other);
 	~CVImage();
 	QRectF boundingRect() const override;

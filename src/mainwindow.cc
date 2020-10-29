@@ -12,8 +12,8 @@
 #include <QSplitter>
 
 #include "chip.h"
+#include "image_op.h"
 #include "view.h"
-
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent),
       top_scene(new QGraphicsScene(0, 0, 1920, 1080, this)),
@@ -88,7 +88,7 @@ void MainWindow::histogram_equalization()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
-	CVImage *histogramImage = new CVImage(*CurImage);
+	CVImage *histogramImage = new CVImage(*CurImage, apply_histogram_equalization);
 	histogramImage->setPos(QPointF(0, 0));
 	top_histogram_scene->addItem(histogramImage);
 }
@@ -106,7 +106,6 @@ void MainWindow::openImage()
 }
 void MainWindow::showImage(QString path)
 {
-	QPixmap image(path);
 	currentImagePath = path;
 	populateScene();
 }
@@ -116,6 +115,7 @@ void MainWindow::clearScene()
 		delete CurImage;
 		CurImage = nullptr;
 	}
+
 	for (auto &scene : activeSceneList) {
 		scene->clear();
 	}

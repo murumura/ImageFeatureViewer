@@ -1,13 +1,11 @@
 #ifndef IMAGE_OP_H
 #define IMAGE_OP_H
+#include <QImage>
+#include <QPixmap>
+#include <functional>
 #include <iostream>
 #include <type_traits>
-#include <functional>
-#include <QImage>
-template <typename ResultType=QImage, typename ... ArgumentTypes>
-class Image_operator{
-    public:
-        std::function<ResultType(ArgumentTypes&&...)> call;
-        std::function<ResultType(ArgumentTypes&&...)> destroy;
-};
+#define MAX_PIX_SIZE 256
+using img_op = std::function<QImage(QImage &&)>;
+QImage apply_histogram_equalization(QImage &&src_img);
 #endif
