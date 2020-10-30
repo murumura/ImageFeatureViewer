@@ -96,7 +96,7 @@ void MainWindow::histogram_equalization()
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
 
-	CVImage *hist_of_processed_img = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
 	hist_of_processed_img->setPos(QPointF(150, 150));
 	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
