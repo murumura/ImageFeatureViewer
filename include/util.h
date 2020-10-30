@@ -12,5 +12,4 @@
  */
 QImage ConvertMatToQImage(const cv::Mat& src, bool enableDeepCopy = false);
 cv::Mat ConvertQImageToMat(const QImage& src, bool enableDeepCopy = false);
-uint8_t Round(double number);
 #endif

@@ -1,10 +1,7 @@
 #include "util.h"
 
 #include <iostream>
-uint8_t Round(double number)
-{
-    return (number > 0.0) ? (number + 0.5) : (number - 0.5);
-}
+
 QImage ConvertMatToQImage(const cv::Mat& src, bool enableDeepCopy)
 {
 	QImage dst;

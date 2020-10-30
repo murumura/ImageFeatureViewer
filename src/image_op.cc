@@ -7,10 +7,10 @@
 #include "util.h"
 QImage transform_gray_img(const QImage& src_img)
 {
-	std::array<uint8_t, MAX_PIX_SIZE> hist;
-	std::array<uint8_t, MAX_PIX_SIZE> hist_cdf;
-	std::array<uint8_t, MAX_PIX_SIZE> normalized;
-    
+	std::array<unsigned int, gray_scale> hist = {};
+	std::array<unsigned int, gray_scale> hist_cdf = {};
+	std::array<unsigned int, gray_scale> normalized = {};
+
 	int h = src_img.height();
 	int w = src_img.width();
 	const int img_size = w * h;
@@ -34,16 +34,16 @@ QImage transform_gray_img(const QImage& src_img)
 
 	// using general histogram equalization formula
 	std::transform(hist_cdf.begin(), hist_cdf.end(), normalized.begin(),
-	               [&](uint8_t hist_cdf_val) {
-		               return Round(
-		                   (hist_cdf_val - hist_cdf[0]) * (255) / (img_size - hist_cdf[0]));
+	               [&](unsigned int hist_cdf_val) {
+		               return static_cast<unsigned int>(
+		                   (hist_cdf_val - hist_cdf[0]) * (gray_scale_level) / (img_size - hist_cdf[0]));
 	               });
 
 	cv::Mat_<uchar>::iterator it_out = dst.begin<uchar>();
 	cv::Mat_<uchar>::iterator it_ori = src.begin<uchar>();
 	cv::Mat_<uchar>::iterator itend_ori = src.end<uchar>();
 	for (; it_ori != itend_ori; it_ori++) {
-		unsigned int pixel_value = static_cast<uint8_t>(*it_ori);
+		unsigned int pixel_value = static_cast<unsigned int>(*it_ori);
 		*it_out = normalized[pixel_value];
 		it_out++;
 	}
@@ -59,6 +59,7 @@ QImage apply_histogram_equalization(QImage&& src_img)
 	case QImage::Format_Grayscale8:
 		dst_img = transform_gray_img(src_img);
 	case QImage::Format_RGB32:
+		dst_img = transform_gray_img(src_img);
 		break;
 	case QImage::Format_RGB888:
 		break;
