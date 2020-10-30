@@ -102,7 +102,7 @@ QImage draw_image_histogram(const QImage& src_img, CV_format_type type)
 		}
 	}
 
-	return ConvertMatToQImage(histImage);
+	return ConvertMatToQImage(histImage,true);
 }
 QImage apply_create_histogram(QImage& src_img)
 {

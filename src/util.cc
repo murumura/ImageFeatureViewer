@@ -8,7 +8,7 @@ QImage ConvertMatToQImage(const cv::Mat& src, bool enableDeepCopy)
 	switch (src.type()) {
 		// Gray image
 	case CV_8UC1:
-		dst = QImage(src.data, src.cols, src.rows, static_cast<int>(src.step), QImage::Format_Indexed8);
+		dst = QImage(src.data, src.cols, src.rows, static_cast<int>(src.step), QImage::Format_Grayscale8);
 		dst.setColorCount(256);
 		for (int i = 0; i < 256; i++)
 			dst.setColor(i, qRgb(i, i, i));
@@ -19,7 +19,7 @@ QImage ConvertMatToQImage(const cv::Mat& src, bool enableDeepCopy)
 		break;
 		// BGRA image
 	case CV_8UC4:
-		dst = QImage(src.data, src.cols, src.rows, static_cast<int>(src.step), QImage::Format_ARGB32);
+		dst = QImage(src.data, src.cols, src.rows, static_cast<int>(src.step), QImage::Format_RGB32);
 		break;
 	default:
 		bool Nonsupport_Mat_Format = false;
