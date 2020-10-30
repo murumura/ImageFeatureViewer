@@ -13,8 +13,9 @@ class mainwindow;
 class CVImage : public QGraphicsItem {
    public:
 	CVImage(const QString &img_path);
+	/**ctor */
 	CVImage(const CVImage &src_img);
-	CVImage(const CVImage src_img, img_op op);
+	CVImage(QImage src_img, img_op op);
 	CVImage &operator=(const CVImage &other);
 	~CVImage();
 	QRectF boundingRect() const override;

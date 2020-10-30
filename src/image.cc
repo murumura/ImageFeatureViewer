@@ -6,7 +6,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QStyleOptionGraphicsItem>
-
+#include <cassert>
 CVImage::CVImage(const QString &img_path)
 {
 	qimage = QImage(img_path);
@@ -19,17 +19,25 @@ CVImage::CVImage(const QString &img_path)
 }
 CVImage::CVImage(const CVImage &src_img)
 {
-	qimage = src_img.get_qimage();
+	qimage = src_img.get_qimage().copy();
 	m_pixmap = src_img.get_pixmap();
 	m_height = src_img.height();
 	m_width = src_img.width();
+	setZValue((m_width + m_height) % 2);
+	setFlags(ItemIsSelectable | ItemIsMovable);
+	setAcceptHoverEvents(true);
 }
-CVImage::CVImage(const CVImage src_img, img_op op)
+CVImage::CVImage(QImage src_qimg, img_op op)
 {
-	qimage = op(src_img.get_qimage());
+	assert(!src_qimg.isNull());
+	qimage = op(src_qimg);
+	assert(!qimage.isNull());
 	m_pixmap = QPixmap::fromImage(qimage);
-	m_height = src_img.height();
-	m_width = src_img.width();
+	m_height = src_qimg.height();
+	m_width = src_qimg.width();
+	setZValue((m_width + m_height) % 2);
+	setFlags(ItemIsSelectable | ItemIsMovable);
+	setAcceptHoverEvents(true);
 }
 CVImage::~CVImage()
 {

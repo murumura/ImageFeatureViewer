@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
 	h2Splitter->addWidget(view);
 	activeSceneList.push_back(bottom_scene);
 
-	view = new View("Histogram view");
+	view = new View("Histogram view(Process)");
 	view->view()->setScene(bottom_histogram_scene);
 	h2Splitter->addWidget(view);
 	activeSceneList.push_back(bottom_histogram_scene);
@@ -88,9 +88,17 @@ void MainWindow::histogram_equalization()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
-	CVImage *histogramImage = new CVImage(*CurImage, apply_histogram_equalization);
-	histogramImage->setPos(QPointF(0, 0));
-	top_histogram_scene->addItem(histogramImage);
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_histogram_equalization);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	CVImage *hist_of_processed_img = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::openImage()
 {

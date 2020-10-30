@@ -14,6 +14,7 @@
 #include <QToolBar>
 #include <QVector>
 #include <QWidget>
+#include <memory>
 
 #include "image.h"
 class MainWindow : public QWidget {
@@ -51,6 +52,7 @@ class MainWindow : public QWidget {
 
 	QString currentImagePath;
 	CVImage *CurImage;
+	CVImage *ProcImage;
 };
 
 #endif  // MAINWINDOW_H
