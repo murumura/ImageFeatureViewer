@@ -4,11 +4,13 @@
 #include <array>
 #include <numeric>
 #include <type_traits>
+#include <variant>
 
 #include "util.h"
 template <typename CV_format_type>
 QImage transform_img(const QImage& src_img, CV_format_type type)
 {
+	int color_space_n = type == CV_8UC1 ? 1 : 3;
 	std::array<unsigned int, gray_scale> hist = {};
 	std::array<unsigned int, gray_scale> hist_cdf = {};
 	std::array<unsigned int, gray_scale> normalized = {};
@@ -102,7 +104,7 @@ QImage draw_image_histogram(const QImage& src_img, CV_format_type type)
 		}
 	}
 
-	return ConvertMatToQImage(histImage,true);
+	return ConvertMatToQImage(histImage, true);
 }
 QImage apply_create_histogram(QImage& src_img)
 {
@@ -114,6 +116,26 @@ QImage apply_create_histogram(QImage& src_img)
 	case QImage::Format_RGB32:
 	case QImage::Format_RGB888:
 		dst_img = draw_image_histogram(src_img, CV_8UC4);
+		break;
+	}
+	return dst_img;
+}
+template <typename CV_format_type>
+QImage extract_channel(const QImage& src_img, CV_format_type type)
+{
+	if (type == CV_8UC1)
+		return src_img.copy();
+}
+QImage apply_extract_channel(QImage& src_img)
+{
+	QImage dst_img;
+	switch (src_img.format()) {
+	case QImage::Format_Grayscale8:
+		dst_img = extract_channel(src_img, CV_8UC1);
+		break;
+	case QImage::Format_RGB32:
+	case QImage::Format_RGB888:
+		dst_img = extract_channel(src_img, CV_8UC4);
 		break;
 	}
 	return dst_img;

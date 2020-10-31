@@ -73,14 +73,38 @@ void MainWindow::createActions()
 	// create actions, add them to menus
 	openAction = new QAction("&Open", this);
 	fileMenu->addAction(openAction);
+
 	exitAction = new QAction("&Exit", this);
 	exitMenu->addAction(exitAction);
+
 	edit_Histogram_Action = new QAction("&Histogram", this);
 	editMenu->addAction(edit_Histogram_Action);
+
+	edit_extract_RGB_Action = new QAction("&ExtractRGB", this);
+	editMenu->addAction(edit_extract_RGB_Action);
+
+	edit_transform_to_Gray_Action = new QAction("&TransformToGray", this);
+	editMenu->addAction(edit_transform_to_Gray_Action);
 	// connect the signals and slots
 	connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
 	connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
 	connect(edit_Histogram_Action, SIGNAL(triggered(bool)), this, SLOT(histogram_equalization()));
+	connect(edit_extract_RGB_Action, SIGNAL(triggered(bool)), this, SLOT(extract_channel()));
+	connect(edit_transform_to_Gray_Action, SIGNAL(triggered(bool)), this, SLOT(transform_to_gray()));
+}
+void MainWindow::extract_channel()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+}
+void MainWindow::transform_to_gray()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
 }
 void MainWindow::histogram_equalization()
 {
