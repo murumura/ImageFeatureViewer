@@ -14,4 +14,5 @@ QImage apply_extract_channel(QImage &src_img, int channel);
 QImage apply_extract_r_channel(QImage &src_img);
 QImage apply_extract_g_channel(QImage &src_img);
 QImage apply_extract_b_channel(QImage &src_img);
+QImage apply_transform_to_gray_scale(QImage &src_img);
 #endif

@@ -7,7 +7,7 @@
 #include <variant>
 
 #include "util.h"
-
+using RGB_Mat_iter = cv::Mat_<cv::Vec3b>::iterator;
 template <typename CV_format_type>
 QImage transform_img(const QImage& src_img, CV_format_type type)
 {
@@ -26,13 +26,12 @@ QImage transform_img(const QImage& src_img, CV_format_type type)
 
 	cv::Mat src = ConvertQImageToMat(src_img);
 	/** occurrence number of a pixel of level i=0~256 */
-	for (int i = 0; i < src.rows; i++) {
-		for (int j = 0; j < src.cols; j++) {
-			for (int k = 0; k < color_space_n; k++) {
-				uint8_t idx;
-				idx = static_cast<uint8_t>(src.at<cv::Vec3b>(i, j)[k]);
-				hist[idx + k * gray_scale]++;
-			}
+	RGB_Mat_iter it_src = src.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_src = src.end<cv::Vec3b>();
+	for (; it_src != itend_src; it_src++) {
+		for (int k = 0; k < color_space_n; k++) {
+			uint8_t idx = static_cast<uint8_t>((*it_src)[k]);
+			hist[idx + k * gray_scale]++;
 		}
 	}
 	/**calculate cdf corresponding to pixel */
@@ -51,9 +50,9 @@ QImage transform_img(const QImage& src_img, CV_format_type type)
 			                   (hist_cdf_val - hist_cdf[k * gray_scale]) * (gray_scale_level) / (img_size - hist_cdf[k * gray_scale]));
 		               });
 
-	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+	RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
 	for (; it_ori != itend_ori; it_ori++) {
 		for (int k = 0; k < color_space_n; k++) {
 			uint8_t pixel_value = static_cast<uint8_t>((*it_ori)[k]);
@@ -143,9 +142,8 @@ QImage extract_channel(const QImage& src_img, int channel, CV_format_type type)
 	const int color_space_n = 3;
 	cv::Mat dst = cv::Mat(src_img.height(),
 	                      src_img.width(),
-	                      type,
-	                      const_cast<unsigned char*>(src_img.constBits()),
-	                      static_cast<size_t>(src_img.bytesPerLine()));
+	                      CV_8UC1);
+
 	cv::Mat src = ConvertQImageToMat(src_img);
 
 	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
@@ -153,12 +151,11 @@ QImage extract_channel(const QImage& src_img, int channel, CV_format_type type)
 	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
 	for (; it_ori != itend_ori; it_ori++) {
 		for (int k = 0; k < color_space_n; k++) {
-			if(k != channel)
-				(*it_out)[k] = 0;
+			if (k == channel)
+				(*it_out)[k] = (*it_ori)[k];
 		}
 		it_out++;
 	}
-
 	return ConvertMatToQImage(dst, true);
 }
 QImage apply_extract_channel(QImage& src_img, int channel)
@@ -186,4 +183,29 @@ QImage apply_extract_g_channel(QImage& src_img)
 QImage apply_extract_b_channel(QImage& src_img)
 {
 	return apply_extract_channel(src_img, 0);
+}
+QImage apply_transform_to_gray_scale(QImage& src_img)
+{
+	switch (src_img.format()) {
+	case QImage::Format_Grayscale8:
+		return src_img.copy();
+		break;
+	case QImage::Format_RGB32:
+	case QImage::Format_RGB888:
+	default:
+		cv::Mat dst = cv::Mat(src_img.height(),
+		                      src_img.width(),
+		                      CV_8UC1);
+		cv::Mat src = ConvertQImageToMat(src_img);
+		cv::Mat_<uchar>::iterator it_out = dst.begin<uchar>();
+		cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
+		cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+		for (; it_ori != itend_ori; it_ori++) {
+			/**Gray = R*0.299 + G*0.587 + B*0.114 */
+			(*it_out) = (*it_ori)[0] * 0.114 + (*it_ori)[1] * 0.587 + (*it_ori)[2] * 0.299;
+			it_out++;
+		}
+		return ConvertMatToQImage(dst, true);
+		break;
+	}
 }

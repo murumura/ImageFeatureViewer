@@ -124,6 +124,17 @@ void MainWindow::extract_G_channel()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_g_channel);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::extract_B_channel()
 {
@@ -131,6 +142,17 @@ void MainWindow::extract_B_channel()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_b_channel);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::transform_to_gray()
 {
@@ -138,6 +160,17 @@ void MainWindow::transform_to_gray()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_transform_to_gray_scale);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::histogram_equalization()
 {
