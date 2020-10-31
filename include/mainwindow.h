@@ -24,7 +24,9 @@ class MainWindow : public QWidget {
    private slots:
 	void openImage();
 	void histogram_equalization();
-	void extract_channel();
+	void extract_R_channel();
+	void extract_G_channel();
+	void extract_B_channel();
 	void transform_to_gray();
 
    private:
@@ -43,7 +45,9 @@ class MainWindow : public QWidget {
 
 	QAction *openAction;
 	QAction *edit_Histogram_Action;
-	QAction *edit_extract_RGB_Action;
+	QAction *edit_extract_R_Action;
+	QAction *edit_extract_G_Action;
+	QAction *edit_extract_B_Action;
 	QAction *edit_transform_to_Gray_Action;
 	QAction *exitAction;
 	QGraphicsScene *top_scene;

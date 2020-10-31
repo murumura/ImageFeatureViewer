@@ -7,14 +7,14 @@
 #include <variant>
 
 #include "util.h"
+
 template <typename CV_format_type>
 QImage transform_img(const QImage& src_img, CV_format_type type)
 {
-	int color_space_n = type == CV_8UC1 ? 1 : 3;
-	std::array<unsigned int, gray_scale> hist = {};
-	std::array<unsigned int, gray_scale> hist_cdf = {};
-	std::array<unsigned int, gray_scale> normalized = {};
-
+	int color_space_n = (type == CV_8UC1) ? 1 : 3;
+	std::vector<unsigned int> hist(gray_scale * color_space_n, 0);
+	std::vector<unsigned int> hist_cdf(gray_scale * color_space_n, 0);
+	std::vector<unsigned int> normalized(gray_scale * color_space_n, 0);
 	int h = src_img.height();
 	int w = src_img.width();
 	const int img_size = w * h;
@@ -23,33 +23,45 @@ QImage transform_img(const QImage& src_img, CV_format_type type)
 	                      type,
 	                      const_cast<unsigned char*>(src_img.constBits()),
 	                      static_cast<size_t>(src_img.bytesPerLine()));
+
 	cv::Mat src = ConvertQImageToMat(src_img);
 	/** occurrence number of a pixel of level i=0~256 */
 	for (int i = 0; i < src.rows; i++) {
 		for (int j = 0; j < src.cols; j++) {
-			uint8_t idx;
-			idx = static_cast<uint8_t>(src.at<uchar>(i, j));
-			hist[idx]++;
+			for (int k = 0; k < color_space_n; k++) {
+				uint8_t idx;
+				idx = static_cast<uint8_t>(src.at<cv::Vec3b>(i, j)[k]);
+				hist[idx + k * gray_scale]++;
+			}
 		}
 	}
 	/**calculate cdf corresponding to pixel */
-	std::partial_sum(hist.begin(), hist.end(), hist_cdf.begin());
+	for (int k = 0; k < color_space_n; k++)
+		std::partial_sum(hist.begin() + k * gray_scale,
+		                 hist.begin() + (k + 1) * gray_scale,
+		                 hist_cdf.begin() + k * gray_scale);
 
 	// using general histogram equalization formula
-	std::transform(hist_cdf.begin(), hist_cdf.end(), normalized.begin(),
-	               [&](unsigned int hist_cdf_val) {
-		               return static_cast<unsigned int>(
-		                   (hist_cdf_val - hist_cdf[0]) * (gray_scale_level) / (img_size - hist_cdf[0]));
-	               });
+	for (int k = 0; k < color_space_n; k++)
+		std::transform(hist_cdf.begin() + k * gray_scale,
+		               hist_cdf.begin() + (k + 1) * gray_scale,
+		               normalized.begin() + k * gray_scale,
+		               [&](unsigned int hist_cdf_val) {
+			               return static_cast<unsigned int>(
+			                   (hist_cdf_val - hist_cdf[k * gray_scale]) * (gray_scale_level) / (img_size - hist_cdf[k * gray_scale]));
+		               });
 
-	cv::Mat_<uchar>::iterator it_out = dst.begin<uchar>();
-	cv::Mat_<uchar>::iterator it_ori = src.begin<uchar>();
-	cv::Mat_<uchar>::iterator itend_ori = src.end<uchar>();
+	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
 	for (; it_ori != itend_ori; it_ori++) {
-		unsigned int pixel_value = static_cast<unsigned int>(*it_ori);
-		*it_out = normalized[pixel_value];
+		for (int k = 0; k < color_space_n; k++) {
+			uint8_t pixel_value = static_cast<uint8_t>((*it_ori)[k]);
+			(*it_out)[k] = normalized[pixel_value + k * gray_scale];
+		}
 		it_out++;
 	}
+
 	return ConvertMatToQImage(dst, true);
 }
 QImage apply_histogram_equalization(QImage& src_img)
@@ -115,28 +127,63 @@ QImage apply_create_histogram(QImage& src_img)
 		break;
 	case QImage::Format_RGB32:
 	case QImage::Format_RGB888:
-		dst_img = draw_image_histogram(src_img, CV_8UC4);
+		dst_img = draw_image_histogram(src_img, CV_8UC3);
 		break;
 	}
 	return dst_img;
 }
 template <typename CV_format_type>
-QImage extract_channel(const QImage& src_img, CV_format_type type)
+QImage extract_channel(const QImage& src_img, int channel, CV_format_type type)
 {
 	if (type == CV_8UC1)
 		return src_img.copy();
+	int h = src_img.height();
+	int w = src_img.width();
+	const int img_size = w * h;
+	const int color_space_n = 3;
+	cv::Mat dst = cv::Mat(src_img.height(),
+	                      src_img.width(),
+	                      type,
+	                      const_cast<unsigned char*>(src_img.constBits()),
+	                      static_cast<size_t>(src_img.bytesPerLine()));
+	cv::Mat src = ConvertQImageToMat(src_img);
+
+	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	for (; it_ori != itend_ori; it_ori++) {
+		for (int k = 0; k < color_space_n; k++) {
+			if(k != channel)
+				(*it_out)[k] = 0;
+		}
+		it_out++;
+	}
+
+	return ConvertMatToQImage(dst, true);
 }
-QImage apply_extract_channel(QImage& src_img)
+QImage apply_extract_channel(QImage& src_img, int channel)
 {
 	QImage dst_img;
 	switch (src_img.format()) {
 	case QImage::Format_Grayscale8:
-		dst_img = extract_channel(src_img, CV_8UC1);
+		dst_img = extract_channel(src_img, channel, CV_8UC1);
 		break;
 	case QImage::Format_RGB32:
 	case QImage::Format_RGB888:
-		dst_img = extract_channel(src_img, CV_8UC4);
+		dst_img = extract_channel(src_img, channel, CV_8UC4);
 		break;
 	}
 	return dst_img;
+}
+QImage apply_extract_r_channel(QImage& src_img)
+{
+	return apply_extract_channel(src_img, 2);
+}
+QImage apply_extract_g_channel(QImage& src_img)
+{
+	return apply_extract_channel(src_img, 1);
+}
+QImage apply_extract_b_channel(QImage& src_img)
+{
+	return apply_extract_channel(src_img, 0);
 }

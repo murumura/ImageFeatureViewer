@@ -80,8 +80,14 @@ void MainWindow::createActions()
 	edit_Histogram_Action = new QAction("&Histogram", this);
 	editMenu->addAction(edit_Histogram_Action);
 
-	edit_extract_RGB_Action = new QAction("&ExtractRGB", this);
-	editMenu->addAction(edit_extract_RGB_Action);
+	edit_extract_R_Action = new QAction("Extract&R", this);
+	editMenu->addAction(edit_extract_R_Action);
+
+	edit_extract_G_Action = new QAction("Extract&G", this);
+	editMenu->addAction(edit_extract_G_Action);
+
+	edit_extract_B_Action = new QAction("Extract&B", this);
+	editMenu->addAction(edit_extract_B_Action);
 
 	edit_transform_to_Gray_Action = new QAction("&TransformToGray", this);
 	editMenu->addAction(edit_transform_to_Gray_Action);
@@ -89,10 +95,37 @@ void MainWindow::createActions()
 	connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
 	connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
 	connect(edit_Histogram_Action, SIGNAL(triggered(bool)), this, SLOT(histogram_equalization()));
-	connect(edit_extract_RGB_Action, SIGNAL(triggered(bool)), this, SLOT(extract_channel()));
+	connect(edit_extract_R_Action, SIGNAL(triggered(bool)), this, SLOT(extract_R_channel()));
+	connect(edit_extract_G_Action, SIGNAL(triggered(bool)), this, SLOT(extract_G_channel()));
+	connect(edit_extract_B_Action, SIGNAL(triggered(bool)), this, SLOT(extract_B_channel()));
 	connect(edit_transform_to_Gray_Action, SIGNAL(triggered(bool)), this, SLOT(transform_to_gray()));
 }
-void MainWindow::extract_channel()
+void MainWindow::extract_R_channel()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_r_channel);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
+}
+void MainWindow::extract_G_channel()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+}
+void MainWindow::extract_B_channel()
 {
 	if (CurImage == nullptr) {
 		QMessageBox::information(this, "Information", "No image to edit.");
@@ -154,6 +187,9 @@ void MainWindow::clearScene()
 }
 void MainWindow::updateScene()
 {
+	for (auto &scene : activeSceneList) {
+		scene->clear();
+	}
 }
 void MainWindow::populateScene()
 {
@@ -162,5 +198,4 @@ void MainWindow::populateScene()
 	CurImage = new CVImage(currentImagePath);
 	CurImage->setPos(QPointF(0, 0));
 	top_scene->addItem(CurImage);
-	updateScene();
 }
