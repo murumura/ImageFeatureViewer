@@ -15,6 +15,7 @@ class CVImage : public QGraphicsItem {
 	CVImage(const QString &img_path);
 	/**ctor */
 	CVImage(const CVImage &src_img);
+	CVImage(const QImage &src_img);
 	CVImage(QImage src_img, img_op op);
 	CVImage &operator=(const CVImage &other);
 	~CVImage();
@@ -26,7 +27,7 @@ class CVImage : public QGraphicsItem {
 	}
 	QImage get_qimage() const
 	{
-		return qimage;
+		return qimage.copy();
 	}
 	int height() const
 	{

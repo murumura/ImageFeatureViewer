@@ -36,7 +36,6 @@ MainWindow::MainWindow(QWidget *parent)
 	View *view = new View("Original");
 	view->view()->setScene(top_scene);
 	h1Splitter->addWidget(view);
-	activeSceneList.push_back(top_scene);
 
 	view = new View("Histogram view");
 	view->view()->setScene(top_histogram_scene);
@@ -91,6 +90,9 @@ void MainWindow::createActions()
 
 	edit_transform_to_Gray_Action = new QAction("&TransformToGray", this);
 	editMenu->addAction(edit_transform_to_Gray_Action);
+
+	undoAction = new QAction("&Undo", this);
+	editMenu->addAction(undoAction);
 	// connect the signals and slots
 	connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
 	connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
@@ -99,6 +101,29 @@ void MainWindow::createActions()
 	connect(edit_extract_G_Action, SIGNAL(triggered(bool)), this, SLOT(extract_G_channel()));
 	connect(edit_extract_B_Action, SIGNAL(triggered(bool)), this, SLOT(extract_B_channel()));
 	connect(edit_transform_to_Gray_Action, SIGNAL(triggered(bool)), this, SLOT(transform_to_gray()));
+	connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undo_image_transform()));
+}
+void MainWindow::undo_image_transform()
+{
+	if (BackUpImg.size() < 2) {
+		QMessageBox::information(this, "Information", "Not edit >=2 image, can't be undone");
+		return;
+	}
+	updateScene();
+
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+	/**pop last image */
+	BackUpImg.pop_back();
+
+	CVImage *PrevImg = new CVImage(BackUpImg.back());
+	PrevImg->setPos(QPointF(150, 150));
+	bottom_scene->addItem(PrevImg);
+
+	CVImage *hist_of_processed_img = new CVImage(PrevImg->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::extract_R_channel()
 {
@@ -106,6 +131,7 @@ void MainWindow::extract_R_channel()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	updateScene();
 	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
@@ -113,6 +139,9 @@ void MainWindow::extract_R_channel()
 	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_r_channel);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
 
 	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
 	hist_of_processed_img->setPos(QPointF(150, 150));
@@ -124,6 +153,7 @@ void MainWindow::extract_G_channel()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	updateScene();
 	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
@@ -131,6 +161,9 @@ void MainWindow::extract_G_channel()
 	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_g_channel);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
 
 	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
 	hist_of_processed_img->setPos(QPointF(150, 150));
@@ -142,6 +175,7 @@ void MainWindow::extract_B_channel()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	updateScene();
 	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
@@ -149,6 +183,9 @@ void MainWindow::extract_B_channel()
 	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_b_channel);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
 
 	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
 	hist_of_processed_img->setPos(QPointF(150, 150));
@@ -160,6 +197,7 @@ void MainWindow::transform_to_gray()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	updateScene();
 	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
@@ -167,6 +205,9 @@ void MainWindow::transform_to_gray()
 	ProcImage = new CVImage(CurImage->get_qimage(), apply_transform_to_gray_scale);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
 
 	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
 	hist_of_processed_img->setPos(QPointF(150, 150));
@@ -178,6 +219,7 @@ void MainWindow::histogram_equalization()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	updateScene();
 	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
@@ -185,6 +227,9 @@ void MainWindow::histogram_equalization()
 	ProcImage = new CVImage(CurImage->get_qimage(), apply_histogram_equalization);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
 
 	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
 	hist_of_processed_img->setPos(QPointF(150, 150));
@@ -213,10 +258,14 @@ void MainWindow::clearScene()
 		delete CurImage;
 		CurImage = nullptr;
 	}
-
 	for (auto &scene : activeSceneList) {
 		scene->clear();
 	}
+}
+void MainWindow::updateHistogramScene()
+{
+	top_histogram_scene->clear();
+	bottom_histogram_scene->clear();
 }
 void MainWindow::updateScene()
 {

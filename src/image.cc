@@ -20,7 +20,19 @@ CVImage::CVImage(const QString &img_path)
 CVImage::CVImage(const CVImage &src_img)
 {
 	qimage = src_img.get_qimage().copy();
-	m_pixmap = src_img.get_pixmap();
+	m_pixmap = src_img.get_pixmap().copy();
+	m_height = src_img.height();
+	m_width = src_img.width();
+	setZValue((m_width + m_height) % 2);
+	setFlags(ItemIsSelectable | ItemIsMovable);
+	setAcceptHoverEvents(true);
+}
+CVImage::CVImage(const QImage &src_img)
+{
+	assert(!src_img.isNull());
+	qimage = src_img.copy();
+	assert(!qimage.isNull());
+	m_pixmap = QPixmap::fromImage(qimage);
 	m_height = src_img.height();
 	m_width = src_img.width();
 	setZValue((m_width + m_height) % 2);
