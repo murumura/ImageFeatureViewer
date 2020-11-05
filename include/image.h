@@ -17,6 +17,16 @@ class CVImage : public QGraphicsItem {
 	CVImage(const CVImage &src_img);
 	CVImage(const QImage &src_img);
 	CVImage(QImage src_img, img_op op);
+	CVImage(QImage src_img, img_op_with_param<int> op, int threshold)
+	{
+		assert(!src_img.isNull());
+		qimage = op(src_img, threshold);
+		assert(!qimage.isNull());
+		m_pixmap = QPixmap::fromImage(qimage);
+		m_height = src_img.height();
+		m_width = src_img.width();
+		setup();
+	}
 	CVImage &operator=(const CVImage &other);
 	~CVImage();
 	QRectF boundingRect() const override;
@@ -36,6 +46,12 @@ class CVImage : public QGraphicsItem {
 	int width() const
 	{
 		return m_width;
+	}
+	void setup()
+	{
+		setZValue((m_width + m_height) % 2);
+		setFlags(ItemIsSelectable | ItemIsMovable);
+		setAcceptHoverEvents(true);
 	}
 	friend mainwindow;
 

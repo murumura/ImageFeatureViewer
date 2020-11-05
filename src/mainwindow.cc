@@ -4,12 +4,14 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QList>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QPluginLoader>
 #include <QSplitter>
+#include <typeinfo>
 
 #include "chip.h"
 #include "image_op.h"
@@ -91,6 +93,9 @@ void MainWindow::createActions()
 	edit_transform_to_Gray_Action = new QAction("&TransformToGray", this);
 	editMenu->addAction(edit_transform_to_Gray_Action);
 
+	edit_threshold_Action = new QAction("&Threshold", this);
+	editMenu->addAction(edit_threshold_Action);
+
 	undoAction = new QAction("&Undo", this);
 	editMenu->addAction(undoAction);
 	// connect the signals and slots
@@ -101,7 +106,33 @@ void MainWindow::createActions()
 	connect(edit_extract_G_Action, SIGNAL(triggered(bool)), this, SLOT(extract_G_channel()));
 	connect(edit_extract_B_Action, SIGNAL(triggered(bool)), this, SLOT(extract_B_channel()));
 	connect(edit_transform_to_Gray_Action, SIGNAL(triggered(bool)), this, SLOT(transform_to_gray()));
+	connect(edit_threshold_Action, SIGNAL(triggered(bool)), this, SLOT(image_threshold()));
 	connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undo_image_transform()));
+}
+void MainWindow::image_threshold()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+	bool ok;
+	int threshold = QInputDialog::getInt(this, tr("QInputDialog::getInt()"),
+	                                     tr("Threshold:"), 0, 1, 255, 1, &ok);
+	updateScene();
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_threshold<int>, threshold);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::undo_image_transform()
 {

@@ -13,9 +13,7 @@ CVImage::CVImage(const QString &img_path)
 	m_pixmap = QPixmap(img_path);
 	this->m_width = qimage.width();
 	this->m_height = qimage.height();
-	setZValue((m_width + m_height) % 2);
-	setFlags(ItemIsSelectable | ItemIsMovable);
-	setAcceptHoverEvents(true);
+	setup();
 }
 CVImage::CVImage(const CVImage &src_img)
 {
@@ -23,9 +21,7 @@ CVImage::CVImage(const CVImage &src_img)
 	m_pixmap = src_img.get_pixmap().copy();
 	m_height = src_img.height();
 	m_width = src_img.width();
-	setZValue((m_width + m_height) % 2);
-	setFlags(ItemIsSelectable | ItemIsMovable);
-	setAcceptHoverEvents(true);
+	setup();
 }
 CVImage::CVImage(const QImage &src_img)
 {
@@ -35,9 +31,7 @@ CVImage::CVImage(const QImage &src_img)
 	m_pixmap = QPixmap::fromImage(qimage);
 	m_height = src_img.height();
 	m_width = src_img.width();
-	setZValue((m_width + m_height) % 2);
-	setFlags(ItemIsSelectable | ItemIsMovable);
-	setAcceptHoverEvents(true);
+	setup();
 }
 CVImage::CVImage(QImage src_qimg, img_op op)
 {
@@ -47,10 +41,9 @@ CVImage::CVImage(QImage src_qimg, img_op op)
 	m_pixmap = QPixmap::fromImage(qimage);
 	m_height = src_qimg.height();
 	m_width = src_qimg.width();
-	setZValue((m_width + m_height) % 2);
-	setFlags(ItemIsSelectable | ItemIsMovable);
-	setAcceptHoverEvents(true);
+	setup();
 }
+
 CVImage::~CVImage()
 {
 	qDebug() << "CVImage::~CVImage()";
