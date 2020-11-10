@@ -214,20 +214,7 @@ QImage apply_transform_to_gray_scale(QImage& src_img)
 
 QImage apply_median_filter(QImage& src_img)
 {
-	static auto surrounding_pixel = [&](cv::Mat src_img,
-	                                    int cur_row,
-	                                    int cur_col,
-	                                    int total_row,
-	                                    int total_col, int cur_channel) -> std::vector<uint8_t> {
-		std::vector<uint8_t> pixel_value;
-		for (int j = 0; j < 3; j++) {
-			for (int i = 0; i < 3; i++) {
-				if (cur_row < total_row && cur_col < total_col) {
-				}
-			}
-		}
-		return pixel_value;
-	};
+	
 	static auto medium = [](std::vector<uint8_t> pixel_value) -> uint8_t {
 		std::sort(pixel_value.begin(), pixel_value.end());
 		return pixel_value[4];
@@ -238,14 +225,8 @@ QImage apply_median_filter(QImage& src_img)
 	cv::Mat dst = cv::Mat(src_img.height(),
 	                      src_img.width(),
 	                      src.type());
-	std::cout << src.cols << " " << src.rows << std::endl;
+	
 	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
-	for (int j = 0; j < src.rows; j++) {
-		for (int i = 0; i < src.cols; i++) {
-			for (int k = 0; k < color_space_n; k++) {
-				dst.at<cv::Vec3b>(j, i)[0] = 0;
-			}
-		}  // end of line
-	}
+	
 	return ConvertMatToQImage(dst, true);
 }
