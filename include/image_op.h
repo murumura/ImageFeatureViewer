@@ -23,7 +23,7 @@ QImage apply_extract_r_channel(QImage &src_img);
 QImage apply_extract_g_channel(QImage &src_img);
 QImage apply_extract_b_channel(QImage &src_img);
 QImage apply_transform_to_gray_scale(QImage &src_img);
-
+QImage apply_median_filter(QImage &src_img);
 template <typename Type>
 QImage apply_threshold(QImage &src_img, Type threshold)
 {

@@ -30,6 +30,7 @@ class MainWindow : public QWidget {
 	void extract_B_channel();
 	void transform_to_gray();
 	void image_threshold();
+	void median_filter();
 	void undo_image_transform();
 
    private:
@@ -54,6 +55,7 @@ class MainWindow : public QWidget {
 	QAction *edit_extract_B_Action;
 	QAction *edit_transform_to_Gray_Action;
 	QAction *edit_threshold_Action;
+	QAction *edit_median_filter_Action;
 	QAction *undoAction;
 	QAction *exitAction;
 	QGraphicsScene *top_scene;

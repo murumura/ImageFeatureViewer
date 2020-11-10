@@ -96,6 +96,9 @@ void MainWindow::createActions()
 	edit_threshold_Action = new QAction("&Threshold", this);
 	editMenu->addAction(edit_threshold_Action);
 
+	edit_median_filter_Action = new QAction("MedianFilter", this);
+	editMenu->addAction(edit_median_filter_Action);
+
 	undoAction = new QAction("&Undo", this);
 	editMenu->addAction(undoAction);
 	// connect the signals and slots
@@ -107,7 +110,23 @@ void MainWindow::createActions()
 	connect(edit_extract_B_Action, SIGNAL(triggered(bool)), this, SLOT(extract_B_channel()));
 	connect(edit_transform_to_Gray_Action, SIGNAL(triggered(bool)), this, SLOT(transform_to_gray()));
 	connect(edit_threshold_Action, SIGNAL(triggered(bool)), this, SLOT(image_threshold()));
+	connect(edit_median_filter_Action, SIGNAL(triggered(bool)), this, SLOT(median_filter()));
 	connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undo_image_transform()));
+}
+void MainWindow::median_filter()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+	updateScene();
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_median_filter);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
 }
 void MainWindow::image_threshold()
 {
