@@ -27,10 +27,29 @@ class CVImage : public QGraphicsItem {
 		m_width = src_img.width();
 		setup();
 	}
+	CVImage(QImage src_img, img_op_with_param<std::vector<int8_t>> op, std::vector<int8_t> sobel_kernel)
+	{
+		assert(!src_img.isNull());
+		qimage = op(src_img, sobel_kernel);
+		assert(!qimage.isNull());
+		m_pixmap = QPixmap::fromImage(qimage);
+		m_height = src_img.height();
+		m_width = src_img.width();
+		setup();
+	}
 	CVImage &operator=(const CVImage &other);
 	~CVImage();
 	QRectF boundingRect() const override;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
+	
+	template <typename U,typename  Args>
+	void process_image(img_op_with_param<U> img_op,Args args)
+	{
+		qimage = img_op(qimage, args);
+		m_pixmap = QPixmap::fromImage(qimage);
+		setup();
+	}
+	
 	QPixmap get_pixmap() const
 	{
 		return m_pixmap;

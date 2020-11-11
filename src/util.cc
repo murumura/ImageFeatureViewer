@@ -1,7 +1,66 @@
 #include "util.h"
 
 #include <iostream>
+std::vector<uint8_t> surrounded_pixel(RGB_Mat_iter src_begin,
+                                      RGB_Mat_iter src_end,
+                                      RGB_Mat_iter src_left_bound,
+                                      RGB_Mat_iter src_right_bound,
+                                      RGB_Mat_iter src_iter,
+                                      int width,
+                                      int cur_channel)
+{
+	std::vector<uint8_t> result;
+	int kernel_size = 3;
+	cv::Mat_<uchar>::iterator it;
+	//left corner case
+	if (src_iter == src_left_bound) {
+		std::fill_n(std::back_inserter(result), 3, 0);
+	}
+	else {
+		if (src_iter - 1 - width < src_begin)
+			result.push_back(0);
+		else
+			result.push_back((*(src_iter - 1 - width))[cur_channel]);
 
+		result.push_back((*(src_iter - 1))[cur_channel]);
+
+		if (src_iter - 1 + width >= src_end)
+			result.push_back(0);
+		else
+			result.push_back((*(src_iter - 1 + width))[cur_channel]);
+	}
+	//upper and bottom case
+	if (src_iter - width < src_begin)
+		result.push_back(0);
+	else
+		result.push_back((*(src_iter - width))[cur_channel]);
+
+	result.push_back((*(src_iter))[cur_channel]);
+
+	if (src_iter + width >= src_end)
+		result.push_back(0);
+	else
+		result.push_back((*(src_iter + width))[cur_channel]);
+	//right corner case
+	if (src_iter == src_right_bound) {
+		std::fill_n(std::back_inserter(result), 3, 0);
+	}
+	else {
+		if (src_iter + 1 - width < src_begin)
+			result.push_back(0);
+		else
+			result.push_back((*(src_iter + 1 - width))[cur_channel]);
+
+		result.push_back((*(src_iter + 1))[cur_channel]);
+
+		if (src_iter + 1 + width >= src_end)
+			result.push_back(0);
+		else
+			result.push_back((*(src_iter + 1 + width))[cur_channel]);
+	}
+
+	return result;
+}
 QImage ConvertMatToQImage(const cv::Mat& src, bool enableDeepCopy)
 {
 	QImage dst;

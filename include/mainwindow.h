@@ -31,6 +31,8 @@ class MainWindow : public QWidget {
 	void transform_to_gray();
 	void image_threshold();
 	void median_filter();
+	void mean_filter();
+	void soble_filter();
 	void undo_image_transform();
 
    private:
@@ -56,6 +58,8 @@ class MainWindow : public QWidget {
 	QAction *edit_transform_to_Gray_Action;
 	QAction *edit_threshold_Action;
 	QAction *edit_median_filter_Action;
+	QAction *edit_mean_filter_Action;
+	QAction *edit_sobel_filter_Action;
 	QAction *undoAction;
 	QAction *exitAction;
 	QGraphicsScene *top_scene;

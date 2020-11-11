@@ -17,7 +17,7 @@ CVImage::CVImage(const QString &img_path)
 }
 CVImage::CVImage(const CVImage &src_img)
 {
-	qimage = src_img.get_qimage().copy();
+	qimage = src_img.get_qimage();
 	m_pixmap = src_img.get_pixmap().copy();
 	m_height = src_img.height();
 	m_width = src_img.width();

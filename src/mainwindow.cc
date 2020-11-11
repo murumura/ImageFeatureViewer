@@ -99,6 +99,12 @@ void MainWindow::createActions()
 	edit_median_filter_Action = new QAction("MedianFilter", this);
 	editMenu->addAction(edit_median_filter_Action);
 
+	edit_mean_filter_Action = new QAction("MeanFilter", this);
+	editMenu->addAction(edit_mean_filter_Action);
+
+	edit_sobel_filter_Action = new QAction("SobelFilter", this);
+	editMenu->addAction(edit_sobel_filter_Action);
+
 	undoAction = new QAction("&Undo", this);
 	editMenu->addAction(undoAction);
 	// connect the signals and slots
@@ -111,7 +117,60 @@ void MainWindow::createActions()
 	connect(edit_transform_to_Gray_Action, SIGNAL(triggered(bool)), this, SLOT(transform_to_gray()));
 	connect(edit_threshold_Action, SIGNAL(triggered(bool)), this, SLOT(image_threshold()));
 	connect(edit_median_filter_Action, SIGNAL(triggered(bool)), this, SLOT(median_filter()));
+	connect(edit_mean_filter_Action, SIGNAL(triggered(bool)), this, SLOT(mean_filter()));
+	connect(edit_sobel_filter_Action, SIGNAL(triggered(bool)), this, SLOT(soble_filter()));
 	connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undo_image_transform()));
+}
+void MainWindow::soble_filter()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+	QStringList items;
+	items << tr("Vertical") << tr("Horizontal") << tr("Combined");
+	std::vector<int8_t> xsobel_kernel{-1, -2, -1, 0, 0, 0, 1, 2, 1};
+	std::vector<int8_t> ysobel_kernel{1, 0, -1, 2, 0, 2, 1, 0, -1};
+	bool ok;
+	QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
+	                                     tr("Sobel-Type:"), items, 0, false, &ok);
+	std::string choice = item.toStdString();
+	if (choice == "Horizontal") {
+		ProcImage = new CVImage(CurImage->get_qimage(), apply_sobel_filter<std::vector<int8_t>>, xsobel_kernel);
+	}
+	else if (choice == "Vertical") {
+		ProcImage = new CVImage(CurImage->get_qimage(), apply_sobel_filter<std::vector<int8_t>>, ysobel_kernel);
+	}
+	else {
+		ProcImage = new CVImage(CurImage->get_qimage());
+		ProcImage->process_image<std::vector<int8_t>>(apply_sobel_filter<std::vector<int8_t>>, ysobel_kernel);
+	}
+	updateScene();
+
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+}
+void MainWindow::mean_filter()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
+	updateScene();
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_mean_filter);
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::median_filter()
 {
@@ -127,6 +186,13 @@ void MainWindow::median_filter()
 	ProcImage = new CVImage(CurImage->get_qimage(), apply_median_filter);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::image_threshold()
 {

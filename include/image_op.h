@@ -12,7 +12,7 @@
 
 /** function prototypes */
 using img_op = std::function<QImage(QImage &)>;
-
+/** function prototypes */
 template <typename Type>
 using img_op_with_param = std::function<QImage(QImage &, Type)>;
 
@@ -24,6 +24,22 @@ QImage apply_extract_g_channel(QImage &src_img);
 QImage apply_extract_b_channel(QImage &src_img);
 QImage apply_transform_to_gray_scale(QImage &src_img);
 QImage apply_median_filter(QImage &src_img);
+QImage apply_mean_filter(QImage &src_img);
+
+
+template <typename Type=std::vector<int8_t>>
+QImage apply_sobel_filter(QImage &src_img, Type sobel_kernels)
+{
+	QImage dst_img;
+	cv::Mat src = ConvertQImageToMat(src_img);
+	cv::Mat dst = cv::Mat(src_img.height(),
+	                      src_img.width(),
+	                      src.type());
+	
+	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
+	
+	return ConvertMatToQImage(dst, true);
+}
 template <typename Type>
 QImage apply_threshold(QImage &src_img, Type threshold)
 {

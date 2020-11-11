@@ -1,7 +1,5 @@
 #include "image_op.h"
 
-#include <math.h> /* floor */
-
 #include <algorithm>
 #include <array>
 #include <numeric>
@@ -9,7 +7,7 @@
 #include <variant>
 
 #include "util.h"
-using RGB_Mat_iter = cv::Mat_<cv::Vec3b>::iterator;
+
 template <typename CV_format_type>
 QImage transform_img(const QImage& src_img, CV_format_type type)
 {
@@ -214,19 +212,67 @@ QImage apply_transform_to_gray_scale(QImage& src_img)
 
 QImage apply_median_filter(QImage& src_img)
 {
-	
-	static auto medium = [](std::vector<uint8_t> pixel_value) -> uint8_t {
-		std::sort(pixel_value.begin(), pixel_value.end());
-		return pixel_value[4];
-	};
 	QImage dst_img;
 
 	cv::Mat src = ConvertQImageToMat(src_img);
 	cv::Mat dst = cv::Mat(src_img.height(),
 	                      src_img.width(),
 	                      src.type());
-	
 	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
-	
+	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
+	cv::Mat_<cv::Vec3b>::iterator it_left_bound = src.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	for (; it_ori != itend_ori; it_ori++) {
+		for (int k = 0; k < color_space_n; k++) {
+			std::vector<uchar> near_pixel = surrounded_pixel(src.begin<cv::Vec3b>(),
+			                                                 src.end<cv::Vec3b>(),
+			                                                 it_left_bound,
+			                                                 it_right_bound,
+			                                                 it_ori,
+			                                                 src.cols,
+			                                                 k);
+			std::nth_element(near_pixel.begin(), near_pixel.begin() + 4, near_pixel.end());
+			(*it_out)[k] = near_pixel[4];
+		}
+		if (it_ori == it_right_bound) {
+			it_right_bound = it_right_bound + src.cols;
+			it_left_bound = it_left_bound + src.cols;
+		}
+		it_out++;
+	}
+	return ConvertMatToQImage(dst, true);
+}
+QImage apply_mean_filter(QImage& src_img)
+{
+	QImage dst_img;
+	cv::Mat src = ConvertQImageToMat(src_img);
+	cv::Mat dst = cv::Mat(src_img.height(),
+	                      src_img.width(),
+	                      src.type());
+	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
+	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
+	cv::Mat_<cv::Vec3b>::iterator it_left_bound = src.begin<cv::Vec3b>();
+	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	for (; it_ori != itend_ori; it_ori++) {
+		for (int k = 0; k < color_space_n; k++) {
+			std::vector<uchar> near_pixel = surrounded_pixel(src.begin<cv::Vec3b>(),
+			                                                 src.end<cv::Vec3b>(),
+			                                                 it_left_bound,
+			                                                 it_right_bound,
+			                                                 it_ori,
+			                                                 src.cols,
+			                                                 k);
+			(*it_out)[k] = std::accumulate(near_pixel.begin(), near_pixel.end(), 0) / 9;
+		}
+		if (it_ori == it_right_bound) {
+			it_right_bound = it_right_bound + src.cols;
+			it_left_bound = it_left_bound + src.cols;
+		}
+		it_out++;
+	}
 	return ConvertMatToQImage(dst, true);
 }
