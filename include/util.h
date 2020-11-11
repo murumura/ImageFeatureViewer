@@ -3,9 +3,16 @@
 #include <assert.h>
 
 #include <QImage>
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+#include <numeric>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <type_traits>
+#include <variant>
+#include <vector>
 /*   When the src QImage format is QImage::Format_RGB8888 and the enableDeepCopy == false,
  *  the ConvertQImageToMat() will change the pixel order of src QImage(RGB to BGR).
  *  ShadowCopy for show image(faster), DeepCopy for process image data(safer).

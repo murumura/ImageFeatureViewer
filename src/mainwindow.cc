@@ -129,21 +129,21 @@ void MainWindow::soble_filter()
 	}
 	QStringList items;
 	items << tr("Vertical") << tr("Horizontal") << tr("Combined");
-	std::vector<int8_t> xsobel_kernel{-1, -2, -1, 0, 0, 0, 1, 2, 1};
-	std::vector<int8_t> ysobel_kernel{1, 0, -1, 2, 0, 2, 1, 0, -1};
+	std::vector<int> xsobel_kernel{1, 0, -1, 2, 0, -2, 1, 0, -1};
+	std::vector<int> ysobel_kernel{1, 2, 1, 0, 0, 0, -1, -2, -1};
 	bool ok;
 	QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
 	                                     tr("Sobel-Type:"), items, 0, false, &ok);
 	std::string choice = item.toStdString();
 	if (choice == "Horizontal") {
-		ProcImage = new CVImage(CurImage->get_qimage(), apply_sobel_filter<std::vector<int8_t>>, xsobel_kernel);
+		ProcImage = new CVImage(CurImage->get_qimage(), apply_sobel_filter<std::vector<int>>, xsobel_kernel);
 	}
 	else if (choice == "Vertical") {
-		ProcImage = new CVImage(CurImage->get_qimage(), apply_sobel_filter<std::vector<int8_t>>, ysobel_kernel);
+		ProcImage = new CVImage(CurImage->get_qimage(), apply_sobel_filter<std::vector<int>>, ysobel_kernel);
 	}
 	else {
 		ProcImage = new CVImage(CurImage->get_qimage());
-		ProcImage->process_image<std::vector<int8_t>>(apply_sobel_filter<std::vector<int8_t>>, ysobel_kernel);
+		ProcImage->process_image(apply_sobel_filter<std::vector<int>>, ysobel_kernel);
 	}
 	updateScene();
 

@@ -1,6 +1,5 @@
 #include "util.h"
 
-#include <iostream>
 std::vector<uint8_t> surrounded_pixel(RGB_Mat_iter src_begin,
                                       RGB_Mat_iter src_end,
                                       RGB_Mat_iter src_left_bound,
