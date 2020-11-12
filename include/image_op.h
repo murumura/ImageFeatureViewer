@@ -38,11 +38,11 @@ QImage apply_sobel_filter(QImage &src_img, Type sobel_kernels)
 	//sanity check
 	if constexpr (std::is_same_v<Type, std::vector<int>>) {
 		int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
-		cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
-		cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
-		cv::Mat_<cv::Vec3b>::iterator it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
-		cv::Mat_<cv::Vec3b>::iterator it_left_bound = src.begin<cv::Vec3b>();
-		cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+		RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+		RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+		RGB_Mat_iter it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
+		RGB_Mat_iter it_left_bound = src.begin<cv::Vec3b>();
+		RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
 		for (; it_ori != itend_ori; it_ori++) {
 			for (int k = 0; k < color_space_n; k++) {
 				std::vector<uchar> near_pixel = surrounded_pixel(src.begin<cv::Vec3b>(),
@@ -58,7 +58,7 @@ QImage apply_sobel_filter(QImage &src_img, Type sobel_kernels)
 				    std::end(near_pixel),
 				    std::begin(Int_near_pixel), [](uchar i) { return static_cast<int>(i); });
 				int inner_product = std::inner_product(std::begin(Int_near_pixel), std::end(Int_near_pixel), std::begin(sobel_kernels), 0.0);
-				(*it_out)[k] = inner_product > 255 ? 255 : inner_product;
+				(*it_out)[k] = (inner_product > 150) ? 255 : (inner_product < 0 ? 0 : inner_product);
 			}
 			if (it_ori == it_right_bound) {
 				it_right_bound = it_right_bound + src.cols;
@@ -78,9 +78,9 @@ QImage apply_threshold(QImage &src_img, Type threshold)
 	                      src_img.width(),
 	                      src.type());
 	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
-	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+	RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
 	for (; it_ori != itend_ori; it_ori++) {
 		for (int k = 0; k < color_space_n; k++) {
 			if ((*it_ori)[k] >= threshold)

@@ -146,9 +146,9 @@ QImage extract_channel(const QImage& src_img, int channel, CV_format_type type)
 
 	cv::Mat src = ConvertQImageToMat(src_img);
 
-	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+	RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
 	for (; it_ori != itend_ori; it_ori++) {
 		for (int k = 0; k < color_space_n; k++) {
 			if (k == channel)
@@ -198,8 +198,8 @@ QImage apply_transform_to_gray_scale(QImage& src_img)
 		                      CV_8UC1);
 		cv::Mat src = ConvertQImageToMat(src_img);
 		cv::Mat_<uchar>::iterator it_out = dst.begin<uchar>();
-		cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
-		cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+		RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+		RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
 		for (; it_ori != itend_ori; it_ori++) {
 			/**Gray = R*0.299 + G*0.587 + B*0.114 */
 			(*it_out) = (*it_ori)[0] * 0.114 + (*it_ori)[1] * 0.587 + (*it_ori)[2] * 0.299;
@@ -219,11 +219,11 @@ QImage apply_median_filter(QImage& src_img)
 	                      src_img.width(),
 	                      src.type());
 	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
-	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
-	cv::Mat_<cv::Vec3b>::iterator it_left_bound = src.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+	RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+	RGB_Mat_iter it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
+	RGB_Mat_iter it_left_bound = src.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
 	for (; it_ori != itend_ori; it_ori++) {
 		for (int k = 0; k < color_space_n; k++) {
 			std::vector<uchar> near_pixel = surrounded_pixel(src.begin<cv::Vec3b>(),
@@ -252,11 +252,11 @@ QImage apply_mean_filter(QImage& src_img)
 	                      src_img.width(),
 	                      src.type());
 	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
-	cv::Mat_<cv::Vec3b>::iterator it_out = dst.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator it_ori = src.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
-	cv::Mat_<cv::Vec3b>::iterator it_left_bound = src.begin<cv::Vec3b>();
-	cv::Mat_<cv::Vec3b>::iterator itend_ori = src.end<cv::Vec3b>();
+	RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+	RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+	RGB_Mat_iter it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
+	RGB_Mat_iter it_left_bound = src.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
 	for (; it_ori != itend_ori; it_ori++) {
 		for (int k = 0; k < color_space_n; k++) {
 			std::vector<uchar> near_pixel = surrounded_pixel(src.begin<cv::Vec3b>(),
