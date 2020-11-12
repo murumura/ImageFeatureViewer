@@ -13,9 +13,53 @@
 
 /** function prototypes */
 using img_op = std::function<QImage(QImage &)>;
-/** function prototypes */
+
+/** function prototypes with only one parameter*/
 template <typename Type>
 using img_op_with_param = std::function<QImage(QImage &, Type)>;
+
+
+template <typename Type = std::vector<int>>
+QImage apply_sobel_combine_filter(QImage &src_img, Type sobel_kernels) {
+    QImage dst_img;
+	cv::Mat src = ConvertQImageToMat(src_img);
+	cv::Mat dst = cv::Mat(src_img.height(),
+	                      src_img.width(),
+	                      src.type());
+	//sanity check
+	if constexpr (std::is_same_v<Type, std::vector<int>>) {
+		int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
+		RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+		RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+		RGB_Mat_iter it_right_bound = src.begin<cv::Vec3b>() + src.cols - 1;
+		RGB_Mat_iter it_left_bound = src.begin<cv::Vec3b>();
+		RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
+		for (; it_ori != itend_ori; it_ori++) {
+			for (int k = 0; k < color_space_n; k++) {
+				std::vector<uchar> near_pixel = surrounded_pixel(src.begin<cv::Vec3b>(),
+				                                                 src.end<cv::Vec3b>(),
+				                                                 it_left_bound,
+				                                                 it_right_bound,
+				                                                 it_ori,
+				                                                 src.cols,
+				                                                 k);
+				std::vector<int> Int_near_pixel(near_pixel.size());
+				std::transform(
+				    std::begin(near_pixel),
+				    std::end(near_pixel),
+				    std::begin(Int_near_pixel), [](uchar i) { return static_cast<int>(i); });
+				int inner_product = std::inner_product(std::begin(Int_near_pixel), std::end(Int_near_pixel), std::begin(sobel_kernels), 0.0);
+				(*it_out)[k] = (inner_product > 150) ? 255 : (inner_product < 0 ? 0 : inner_product);
+			}
+			if (it_ori == it_right_bound) {
+				it_right_bound = it_right_bound + src.cols;
+				it_left_bound = it_left_bound + src.cols;
+			}
+			it_out++;
+		}
+	}
+	return ConvertMatToQImage(dst, true);
+}
 
 QImage apply_histogram_equalization(QImage &src_img);
 QImage apply_create_histogram(QImage &src_img);

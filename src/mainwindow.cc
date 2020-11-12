@@ -143,7 +143,7 @@ void MainWindow::soble_filter()
 	}
 	else {
 		ProcImage = new CVImage(CurImage->get_qimage());
-		ProcImage->process_image(apply_sobel_filter<std::vector<int>>, ysobel_kernel);
+		ProcImage->process_image(apply_sobel_combine_filter<std::vector<int>>, ysobel_kernel);
 	}
 	updateScene();
 	ProcImage->setPos(QPointF(0, 0));

@@ -49,7 +49,6 @@ class CVImage : public QGraphicsItem {
 		m_pixmap = QPixmap::fromImage(qimage);
 		setup();
 	}
-
 	QPixmap get_pixmap() const
 	{
 		return m_pixmap;
