@@ -19,10 +19,6 @@ using img_op_with_param = std::function<QImage(QImage &, Type)>;
 
 QImage apply_histogram_equalization(QImage &src_img);
 QImage apply_create_histogram(QImage &src_img);
-QImage apply_extract_channel(QImage &src_img, int channel);
-QImage apply_extract_r_channel(QImage &src_img);
-QImage apply_extract_g_channel(QImage &src_img);
-QImage apply_extract_b_channel(QImage &src_img);
 QImage apply_transform_to_gray_scale(QImage &src_img);
 QImage apply_median_filter(QImage &src_img);
 QImage apply_mean_filter(QImage &src_img);
@@ -90,6 +86,32 @@ QImage apply_threshold(QImage &src_img, Type threshold)
 		}
 		it_out++;
 	}
+	return ConvertMatToQImage(dst, true);
+}
+template <typename Type>
+QImage apply_extract_channel(const QImage &src_img, Type channel)
+{
+	QImage dst_img;
+	cv::Mat src = ConvertQImageToMat(src_img);
+	cv::Mat dst = cv::Mat(src_img.height(),
+	                      src_img.width(),
+	                      CV_8UC1);
+	int color_space_n = src.type() == CV_8UC1 ? 1 : 3;
+	if (color_space_n == 1) {
+		return src_img.copy();
+	}
+
+	RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+	RGB_Mat_iter it_ori = src.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori = src.end<cv::Vec3b>();
+	for (; it_ori != itend_ori; it_ori++) {
+		for (int k = 0; k < color_space_n; k++) {
+			if (k == channel)
+				(*it_out)[k] = (*it_ori)[k];
+		}
+		it_out++;
+	}
+
 	return ConvertMatToQImage(dst, true);
 }
 #endif

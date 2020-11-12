@@ -146,9 +146,16 @@ void MainWindow::soble_filter()
 		ProcImage->process_image(apply_sobel_filter<std::vector<int>>, ysobel_kernel);
 	}
 	updateScene();
-
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
+
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::mean_filter()
 {
@@ -157,6 +164,7 @@ void MainWindow::mean_filter()
 		return;
 	}
 	updateScene();
+
 	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
@@ -252,7 +260,7 @@ void MainWindow::extract_R_channel()
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
 
-	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_r_channel);
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_channel<int>, (int)2);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
 
@@ -274,7 +282,7 @@ void MainWindow::extract_G_channel()
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
 
-	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_g_channel);
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_channel<int>, (int)1);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
 
@@ -296,7 +304,7 @@ void MainWindow::extract_B_channel()
 	original_img_hist->setPos(QPointF(150, 150));
 	top_histogram_scene->addItem(original_img_hist);
 
-	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_b_channel);
+	ProcImage = new CVImage(CurImage->get_qimage(), apply_extract_channel<int>, (int)0);
 	ProcImage->setPos(QPointF(0, 0));
 	bottom_scene->addItem(ProcImage);
 
