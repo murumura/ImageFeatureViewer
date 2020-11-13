@@ -105,6 +105,9 @@ void MainWindow::createActions()
 	edit_sobel_filter_Action = new QAction("SobelFilter", this);
 	editMenu->addAction(edit_sobel_filter_Action);
 
+	edit_transform_Action = new QAction("Transform", this);
+	editMenu->addAction(edit_transform_Action);
+
 	undoAction = new QAction("&Undo", this);
 	editMenu->addAction(undoAction);
 	// connect the signals and slots
@@ -119,7 +122,15 @@ void MainWindow::createActions()
 	connect(edit_median_filter_Action, SIGNAL(triggered(bool)), this, SLOT(median_filter()));
 	connect(edit_mean_filter_Action, SIGNAL(triggered(bool)), this, SLOT(mean_filter()));
 	connect(edit_sobel_filter_Action, SIGNAL(triggered(bool)), this, SLOT(soble_filter()));
+	connect(edit_transform_Action, SIGNAL(triggered(bool)), this, SLOT(transform()));
 	connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undo_image_transform()));
+}
+void MainWindow::transform()
+{
+	if (CurImage == nullptr) {
+		QMessageBox::information(this, "Information", "No image to edit.");
+		return;
+	}
 }
 void MainWindow::soble_filter()
 {
@@ -127,10 +138,30 @@ void MainWindow::soble_filter()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	bool overlapped = false;
+	int threshold;
+	int result = QMessageBox::information(this,
+	                                      "Image Overlapped",
+	                                      "Do you wish to do image overlapped after apply sobel?",
+	                                      QMessageBox::Yes | QMessageBox::Default,
+	                                      QMessageBox::No | QMessageBox::Escape);
+	switch (result) {
+	case QMessageBox::Yes:
+		overlapped = true;
+		bool ok;
+		threshold = QInputDialog::getInt(this, tr("QInputDialog::getInt()"),
+		                                 tr("Threshold:"), 0, 1, 255, 1, &ok);
+		break;
+	case QMessageBox::No:
+		break;
+	}
+
 	QStringList items;
 	items << tr("Vertical") << tr("Horizontal") << tr("Combined");
 	std::vector<int> xsobel_kernel{1, 0, -1, 2, 0, -2, 1, 0, -1};
 	std::vector<int> ysobel_kernel{1, 2, 1, 0, 0, 0, -1, -2, -1};
+	std::vector<int> combined(xsobel_kernel);
+	combined.insert(combined.end(), ysobel_kernel.begin(), ysobel_kernel.end());
 	bool ok;
 	QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
 	                                     tr("Sobel-Type:"), items, 0, false, &ok);
@@ -143,7 +174,11 @@ void MainWindow::soble_filter()
 	}
 	else {
 		ProcImage = new CVImage(CurImage->get_qimage());
-		ProcImage->process_image(apply_sobel_combine_filter<std::vector<int>>, ysobel_kernel);
+		ProcImage->process_image<std::vector<int>>(apply_sobel_combine_filter<std::vector<int>>, combined);
+	}
+	if (overlapped) {
+		ProcImage->process_image<int>(apply_threshold<int>, threshold);
+		ProcImage->process_image<int>(apply_reserve_color<int>, 1);
 	}
 	updateScene();
 	ProcImage->setPos(QPointF(0, 0));

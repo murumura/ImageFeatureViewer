@@ -42,10 +42,10 @@ class CVImage : public QGraphicsItem {
 	QRectF boundingRect() const override;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
 
-	template <typename Args>
-	void process_image(img_op_with_param<Args> img_op, Args args)
+	template <class Type, class... Args>
+	void process_image(img_op_with_param<Type> img_op, Args &&... args)
 	{
-		qimage = img_op(qimage, args);
+		qimage = img_op(qimage, std::forward<Args>(args)...);
 		m_pixmap = QPixmap::fromImage(qimage);
 		setup();
 	}

@@ -33,6 +33,7 @@ class MainWindow : public QWidget {
 	void median_filter();
 	void mean_filter();
 	void soble_filter();
+	void transform();
 	void undo_image_transform();
 
    private:
@@ -60,6 +61,7 @@ class MainWindow : public QWidget {
 	QAction *edit_median_filter_Action;
 	QAction *edit_mean_filter_Action;
 	QAction *edit_sobel_filter_Action;
+	QAction *edit_transform_Action;
 	QAction *undoAction;
 	QAction *exitAction;
 	QGraphicsScene *top_scene;
@@ -71,8 +73,8 @@ class MainWindow : public QWidget {
 	QSplitter *h2Splitter;
 
 	QString currentImagePath;
-	CVImage *CurImage;
-	CVImage *ProcImage;
+	CVImage *CurImage = nullptr;
+	CVImage *ProcImage = nullptr;
 	std::vector<QImage> BackUpImg;
 };
 
