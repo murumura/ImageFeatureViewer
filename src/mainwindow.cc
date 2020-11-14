@@ -3,7 +3,6 @@
 #include <QApplication>
 #include <QDebug>
 #include <QFileDialog>
-#include <QHBoxLayout>
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QList>
@@ -133,7 +132,7 @@ void MainWindow::transform()
 	}
 	updateScene();
 	openImage(&ProcImage);
-	QToolButton *TranformModeButton = new QToolButton();
+	TranformModeButton = new QToolButton();
 	TranformModeButton->setText(tr("Transform"));
 	TranformModeButton->setCheckable(true);
 	TranformModeButton->setChecked(true);
@@ -157,6 +156,7 @@ void MainWindow::register_back_to_original_image()
 	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
 	hist_of_processed_img->setPos(QPointF(150, 150));
 	bottom_histogram_scene->addItem(hist_of_processed_img);
+	delete TranformModeButton;
 }
 void MainWindow::soble_filter()
 {

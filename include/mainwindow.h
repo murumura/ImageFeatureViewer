@@ -11,6 +11,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QSplitter>
+#include <QToolButton>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QVector>
@@ -74,7 +75,7 @@ class MainWindow : public QWidget {
 	QVector<QGraphicsScene *> activeSceneList;
 	QSplitter *h1Splitter;
 	QSplitter *h2Splitter;
-
+	QToolButton *TranformModeButton;
 	QString currentImagePath;
 	CVImage *CurImage = nullptr;
 	CVImage *ProcImage = nullptr;
