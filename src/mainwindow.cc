@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
 	h2Splitter->addWidget(view);
 	activeSceneList.push_back(bottom_histogram_scene);
 
-	QHBoxLayout *layout = new QHBoxLayout();
+	layout = new QHBoxLayout();
 	layout->addWidget(vSplitter);
 	initUI();
 	layout->addWidget(menuBar);
@@ -131,6 +131,32 @@ void MainWindow::transform()
 		QMessageBox::information(this, "Information", "No image to edit.");
 		return;
 	}
+	updateScene();
+	openImage(&ProcImage);
+	QToolButton *TranformModeButton = new QToolButton();
+	TranformModeButton->setText(tr("Transform"));
+	TranformModeButton->setCheckable(true);
+	TranformModeButton->setChecked(true);
+	layout->addWidget(TranformModeButton);
+	connect(TranformModeButton, &QAbstractButton::clicked, this, &MainWindow::register_back_to_original_image);
+}
+void MainWindow::register_back_to_original_image()
+{
+	updateScene();
+	CVImage *original_img_hist = new CVImage(CurImage->get_qimage(), apply_create_histogram);
+	original_img_hist->setPos(QPointF(150, 150));
+	top_histogram_scene->addItem(original_img_hist);
+
+	ProcImage->image_operation<void>(apply_transform_image_postion, CurImage->get_qimage(), ProcImage->get_qimage());
+	ProcImage->setPos(QPointF(0, 0));
+	bottom_scene->addItem(ProcImage);
+
+	/**save prev image for undone action*/
+	BackUpImg.emplace_back(ProcImage->get_qimage());
+
+	CVImage *hist_of_processed_img = new CVImage(ProcImage->get_qimage(), apply_create_histogram);
+	hist_of_processed_img->setPos(QPointF(150, 150));
+	bottom_histogram_scene->addItem(hist_of_processed_img);
 }
 void MainWindow::soble_filter()
 {
@@ -179,6 +205,7 @@ void MainWindow::soble_filter()
 	if (overlapped) {
 		ProcImage->process_image<int>(apply_threshold<int>, threshold);
 		ProcImage->process_image<int>(apply_reserve_color<int>, 1);
+		ProcImage->image_operation<void>(apply_merge_image, CurImage->get_qimage(), ProcImage->get_qimage(), 1);
 	}
 	updateScene();
 	ProcImage->setPos(QPointF(0, 0));
@@ -404,6 +431,20 @@ void MainWindow::openImage()
 	if (dialog.exec()) {
 		filePaths = dialog.selectedFiles();
 		showImage(filePaths.at(0));
+	}
+}
+void MainWindow::openImage(CVImage **Proc)
+{
+	QFileDialog dialog(this);
+	dialog.setWindowTitle("Open Image");
+	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+	QStringList filePaths;
+	if (dialog.exec()) {
+		filePaths = dialog.selectedFiles();
+		(*Proc) = new CVImage(filePaths.at(0));
+		(*Proc)->setPos(QPointF(0, 0));
+		bottom_scene->addItem((*Proc));
 	}
 }
 void MainWindow::showImage(QString path)

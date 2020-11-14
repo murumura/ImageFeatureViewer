@@ -17,8 +17,8 @@ template <typename Ret, typename Class, typename... Args>
 function(Ret (Class::*)(Args...)) -> function<Ret(Class &, Args...)>;
 
 template <typename Ret, typename Class, typename... Args>
-function(Ret (Class::*)(Args...))
-    -> function<Ret(const Class &, Args...) const>;
+function(Ret (Class::*)(Args...) const)
+    -> function<Ret(const Class &, Args...)>;
 };  // namespace std
 
 #define gray_scale 256
@@ -39,7 +39,8 @@ QImage apply_create_histogram(QImage &src_img);
 QImage apply_transform_to_gray_scale(QImage &src_img);
 QImage apply_median_filter(QImage &src_img);
 QImage apply_mean_filter(QImage &src_img);
-
+QImage apply_merge_image(const QImage &src_img, const QImage &src_img2, int channel);
+QImage apply_transform_image_postion(const QImage &src_img, const QImage &dst_img);
 template <typename Type = std::vector<int>>
 QImage apply_sobel_filter(QImage &src_img, Type sobel_kernels)
 {

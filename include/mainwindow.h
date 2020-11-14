@@ -4,6 +4,7 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMap>
@@ -24,6 +25,7 @@ class MainWindow : public QWidget {
 	MainWindow(QWidget *parent = nullptr);
    private slots:
 	void openImage();
+	void openImage(CVImage **);
 	void histogram_equalization();
 	void extract_R_channel();
 	void extract_G_channel();
@@ -34,6 +36,7 @@ class MainWindow : public QWidget {
 	void mean_filter();
 	void soble_filter();
 	void transform();
+	void register_back_to_original_image();
 	void undo_image_transform();
 
    private:
@@ -50,7 +53,7 @@ class MainWindow : public QWidget {
 	QMenu *fileMenu;
 	QMenu *editMenu;
 	QMenu *exitMenu;
-
+	QHBoxLayout *layout;
 	QAction *openAction;
 	QAction *edit_Histogram_Action;
 	QAction *edit_extract_R_Action;

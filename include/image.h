@@ -49,6 +49,13 @@ class CVImage : public QGraphicsItem {
 		m_pixmap = QPixmap::fromImage(qimage);
 		setup();
 	}
+	template <class Ret, class Functor, class... Args>
+	Ret image_operation(Functor &&f, Args &&... args)
+	{
+		qimage = f(std::forward<Args>(args)...);
+		m_pixmap = QPixmap::fromImage(qimage);
+		setup();
+	}
 	QPixmap get_pixmap() const
 	{
 		return m_pixmap;
@@ -71,6 +78,8 @@ class CVImage : public QGraphicsItem {
 		setFlags(ItemIsSelectable | ItemIsMovable);
 		setAcceptHoverEvents(true);
 	}
+	QImage qimage;
+	QPixmap m_pixmap;
 	friend mainwindow;
 
    protected:
@@ -83,8 +92,6 @@ class CVImage : public QGraphicsItem {
 	int m_width;
 	QColor color;
 	QVector<QPointF> stuff;
-	QImage qimage;
-	QPixmap m_pixmap;
 };
 
 #endif

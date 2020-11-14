@@ -10,7 +10,6 @@
 
 QImage apply_histogram_equalization(QImage& src_img)
 {
-	QImage dst_img;
 	cv::Mat src = ConvertQImageToMat(src_img);
 	cv::Mat dst = cv::Mat(src_img.height(),
 	                      src_img.width(),
@@ -64,7 +63,6 @@ QImage apply_create_histogram(QImage& src_img)
 	using namespace cv;
 	using namespace std;
 	int hist_w = 512, hist_h = 400;
-	QImage dst_img;
 	cv::Mat src = ConvertQImageToMat(src_img);
 	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
 
@@ -121,8 +119,6 @@ QImage apply_transform_to_gray_scale(QImage& src_img)
 }
 QImage apply_median_filter(QImage& src_img)
 {
-	QImage dst_img;
-
 	cv::Mat src = ConvertQImageToMat(src_img);
 	cv::Mat dst = cv::Mat(src_img.height(),
 	                      src_img.width(),
@@ -155,7 +151,6 @@ QImage apply_median_filter(QImage& src_img)
 }
 QImage apply_mean_filter(QImage& src_img)
 {
-	QImage dst_img;
 	cv::Mat src = ConvertQImageToMat(src_img);
 	cv::Mat dst = cv::Mat(src_img.height(),
 	                      src_img.width(),
@@ -183,5 +178,53 @@ QImage apply_mean_filter(QImage& src_img)
 		}
 		it_out++;
 	}
+	return ConvertMatToQImage(dst, true);
+}
+QImage apply_merge_image(const QImage& src_img, const QImage& src_img2, int channel)
+{
+	cv::Mat src1 = ConvertQImageToMat(src_img);
+	cv::Mat src2 = ConvertQImageToMat(src_img2);
+
+	cv::Mat dst = cv::Mat(src_img.height(),
+	                      src_img.width(),
+	                      CV_8UC3, cv::Scalar(255, 255, 255));
+	int color_space_n = 3;
+
+	RGB_Mat_iter it_out = dst.begin<cv::Vec3b>();
+	/**iterator for source image 1 */
+	RGB_Mat_iter it_ori_1 = src1.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori_1 = src1.end<cv::Vec3b>();
+	/**iterator for source image 2 */
+	RGB_Mat_iter it_ori_2 = src2.begin<cv::Vec3b>();
+	RGB_Mat_iter itend_ori_2 = src2.end<cv::Vec3b>();
+
+	for (; it_ori_1 != itend_ori_1; it_ori_1++, it_ori_2++) {
+		for (int k = 0; k < color_space_n; k++) {
+			if (k == channel)
+				(*it_out)[k] = (*it_ori_2)[channel];
+			else
+				(*it_out)[k] = (*it_ori_1)[k] * 0.5;
+		}
+		it_out++;
+	}
+
+	return ConvertMatToQImage(dst, true);
+}
+QImage apply_transform_image_postion(const QImage& src_img, const QImage& dst_img)
+{
+	cv::Mat src = ConvertQImageToMat(src_img);
+	cv::Mat dst = ConvertQImageToMat(dst_img);
+	std::vector<cv::Point2f> pts_src, pts_dst;
+	pts_src.push_back(cv::Point2f(0, 0));
+	pts_src.push_back(cv::Point2f(0, src.cols - 1));
+	pts_src.push_back(cv::Point2f(src.rows - 1, 0));
+	pts_src.push_back(cv::Point2f(src.rows - 1, src.cols - 1));
+
+	pts_dst.push_back(cv::Point2f(0, 0));
+	pts_dst.push_back(cv::Point2f(0, dst.cols - 1));
+	pts_dst.push_back(cv::Point2f(dst.rows - 1, 0));
+	pts_dst.push_back(cv::Point2f(dst.rows - 1, dst.cols - 1));
+	cv::Mat h = findHomography(pts_src, pts_dst);
+	cv::warpPerspective(src, dst, h, dst.size());
 	return ConvertMatToQImage(dst, true);
 }
