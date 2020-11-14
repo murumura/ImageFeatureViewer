@@ -12,7 +12,6 @@
 #include <QSplitter>
 #include <typeinfo>
 
-#include "chip.h"
 #include "image_op.h"
 #include "view.h"
 MainWindow::MainWindow(QWidget *parent)

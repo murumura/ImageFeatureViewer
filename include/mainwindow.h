@@ -11,9 +11,9 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QSplitter>
-#include <QToolButton>
 #include <QStatusBar>
 #include <QToolBar>
+#include <QToolButton>
 #include <QVector>
 #include <QWidget>
 #include <memory>
